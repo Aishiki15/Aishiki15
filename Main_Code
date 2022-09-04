@@ -1,0 +1,494 @@
+#ADMIN
+import pymysql
+import csv
+import random
+
+db=pymysql.connect(host='localhost',user='root',password='root12345')
+cur=db.cursor()
+try:
+    cur.execute('use Amaze;')
+except:
+    cur.execute('create database Amaze;')
+try:
+    cur.execute('desc movie;')
+except:
+    cur.execute('create table movie (cn varchar(4),Name varchar(50), Studio varchar(50), Genre varchar(70), YOR integer(4), Rating decimal(2,1), Language varchar(12), summary varchar(200));')
+try:
+  cur.execute('desc series;')
+except:
+  cur.execute('create table series (cn varchar(4),Name varchar(50), Studio varchar(50), Genre varchar(70), YOR integer(4), Rating decimal(2,1), Language varchar(12), summary varchar(200));')          
+
+#CREATING NON EXISTENT CSV FILES
+try:
+    with open('primary.csv','r') as f:
+        pass
+except:
+    with open('primary.csv','w',newline='') as f:
+        cw=csv.writer(f)
+        cw.writerow(['USERNAME','PASSWORD'])
+
+def addmov():
+  #SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE
+  cur.execute("select count(*) from movie;")
+  cn1=cur.fetchall()
+  cn2='m'+str(cn1[0][0]+1)                      
+  name=input("enter name of movie:")
+  studio=input("enter studio of movie:")
+  genre=input("enter genre of movie(comma separated):")
+  year= int(input("enter year of release="))
+  rate=0
+  language=input("enter language=")
+  suma= input('enter summary=')
+  cur.execute("insert into movie values ('"+cn2.lower()+"','"+name.lower()+"','"+studio.lower()+"','"+genre.lower()+"',"+str(year)+","+str(rate)+",'"+language.lower()+"','"+suma.lower()+"');" )
+  db.commit()
+
+def delmov():
+  search = input('Enter name of the movie you wish to delete:')
+  print('these movies were found')
+  str1='SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE FROM MOVIE WHERE NAME LIKE "%'+search+'%" OR GENRE LIKE "%'+search+'%" OR STUDIO LIKE "%'+search+'%" OR LANGUAGE LIKE "'+search+'";'
+  cur.execute(str1)
+  data=cur.fetchall()
+  print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+  for x,y,z,a,b,c,d in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+  cn=input('enter code no.(case sensitive) of movie u wish to delete')
+  cur.execute('delete from movie where cn="'+cn+'";')
+  db.commit()
+  print('Successfully deleted')
+
+def altmov(): #EDITING SUMMARY TOO #SYNTAX ERROR 
+  search = input('enter name of movie u wish to alter')
+  print('these movies were found')
+  str1='SELECT * FROM MOVIE WHERE NAME LIKE "%'+search+'%";'
+  cur.execute(str1)
+  data=cur.fetchall()
+  print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+  for x,y,z,a,b,c,d,e in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+  print('--------------SUMMARY-----------------')
+  for x,y,z,a,b,c,d,e in data:
+        print('%3s | %100s |' %(x,e.ljust(100,' ')))
+  cn=input('enter code no.(case sensitive) of movie u wish to edit')
+  rec=input('enter the column u wish to edit=')
+  new=input('enter the edited value')
+  cur.execute('UPDATE movie SET '+rec+'="'+new.lower()+'" WHERE cn="'+cn+'";') 
+  db.commit()
+  cur.execute('select * from movie where cn="'+cn+'";')
+  f=cur.fetchall()
+  print('the updated record is',f)
+
+#WEBSERIES:
+
+def addweb():
+  #SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE
+  cur.execute("select count(*) from series;")
+  cn1=cur.fetchall()
+  cn2='w'+str(cn1[0][0]+1)                                     
+  cn2=cn1[0][0]+1
+  name=input("enter name of webseries:")
+  studio=input("enter studio of webseries:")
+  genre=input("enter genre of webseries(comma separated):")
+  year= int(input("enter year of release="))
+  rate=0
+  language=input("enter language=")
+  suma= input('enter summary=')
+  cur.execute("insert into movie values ('"+cn2.lower()+"','"+name.lower()+"','"+studio.lower()+"','"+genre.lower()+"',"+str(year)+","+str(rate)+",'"+language.lower()+"','"+suma.lower()+"');" )
+  db.commit()
+
+def delweb():
+  search = input('Enter name of the webseries you wish to delete:')
+  print('these webseries were found')
+  str1='SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE FROM SERIES WHERE NAME LIKE "%'+search+'%" OR GENRE LIKE "%'+search+'%" OR STUDIO LIKE "%'+search+'%" OR LANGUAGE LIKE "'+search+'";'
+  cur.execute(str1)
+  data=cur.fetchall()
+  print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+  for x,y,z,a,b,c,d in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+  cn=input('enter code no.(case senstive) of webseries u wish to delete')
+  cur.execute('delete from series where cn="'+cn+'";')
+  db.commit()
+  print('Successfully deleted')
+
+def altweb():
+  name = input('enter name of webseries u wish to alter')
+  print('these webseries were found')
+  str1='SELECT * FROM SERIES WHERE NAME LIKE "%'+search+'%";'
+  cur.execute(str1)
+  data=cur.fetchall()
+  print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+  for x,y,z,a,b,c,d,e in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+  print('--------------SUMMARY-----------------')
+  for x,y,z,a,b,c,d,e in data:
+        print('%3s | %100s |' %(x,e.ljust(100,' ')))
+  cn=input('enter code no.(case sensitive) of the webseries u wish to alter')
+  rec=input('enter the column u wish to edit=')
+  new=input('enter the edited value')
+  cur.execute('update series set '+rec+'="'+new.lower()+'" where cn="'+cn+'";')
+  db.commit()
+  cur.execute('select * from series where cn="'+cn+'";')
+  f=cur.fetchall()
+  print('the updated record is',f)
+
+#USER MODE:
+
+def MSearch(search):
+    str1='SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE FROM MOVIE WHERE NAME LIKE "%'+search+'%" OR GENRE LIKE "%'+search+'%" OR STUDIO LIKE "%'+search+'%" OR LANGUAGE LIKE "'+search+'";'
+    cur.execute(str1)
+    data=cur.fetchall()
+    print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+    for x,y,z,a,b,c,d in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+    cn=input('Enter Code no.(case sensitive) to get full information or type back to go back=')
+    if cn.lower()!='back':
+      cur. execute('Select name,summary from movie where cn="'+ cn+'";')
+      data2=cur.fetchall()
+      print(data2)
+      print('For more information please go to this link')
+      print("https://en.wikipedia.org/wiki/"+data2[0][0])
+    return cn
+    
+    
+def WSearch(search):
+    str1='SELECT CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE FROM SERIES WHERE NAME LIKE "%'+search+'%" OR GENRE LIKE "%'+search+'%" OR STUDIO LIKE "%'+search+'%" OR LANGUAGE LIKE "'+search+'";'
+    cur.execute(str1)
+    data=cur.fetchall ()
+    print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+    for x,y,z,a,b,c,d in data:
+#CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+        print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+              (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+    cn=input('Enter Code no.(case sensitive) to get full information or type back to go back=')
+    if cn.lower()!='back':
+      cur. execute('Select name,summary from movie where cn="' + cn+'";')
+      data2=cur.fetchall()
+      print(data2)
+      print('For more information please go to this link')
+      print("https://en.wikipedia.org/wiki/"+data2[0][0])
+    return cn
+
+def signup():
+  try:
+    while True:
+        while True:
+          loginid=input("Create a username or press Ctrl+C if you wish to go back:")
+          with open ("primary.csv","r") as p:
+            cp=csv.reader(p)
+            for i in cp:
+              if i[0]==loginid:
+                print("username already exists")
+                break
+            else:
+              break
+        while True:  
+          Pass= input("Create password of min 8 letters or press Ctrl+C if you wish to cancel:")
+          if len(Pass)>=8:
+                  with open ("primary.csv", "a",newline='') as f:
+                      cw= csv.writer(f)
+                      cw.writerow([loginid,Pass])
+                  print("login id successfully created!")
+                  with open ("wishlist.csv", "a",newline='') as f:
+                      cw= csv.writer(f)
+                      l=[]
+                      cw.writerow([loginid,l])
+                  with open ("secondary.csv", "a", newline='') as s:
+                    cs=csv.writer(s)
+                    pref=input("Please enter your language of preference, if none then type'none'")
+                    cs.writerow([loginid,pref.lower()])
+                    break
+          else:
+            print('minimum 8 characters!')
+        break
+    signed(loginid)
+  except KeyboardInterrupt:
+    pass
+
+def signin():
+  try:
+    with open ("primary.csv", "r" ) as f:
+        l=[]
+        cr=csv.reader(f)
+        for i in cr:
+            l.append(i)
+        loginid= input("Enter your username or press Ctrl+C if you wish to go back:")
+        Pass=input("Enter your password or press Ctrl+C if you wish to go back")
+        if [loginid,Pass] in l:
+            print('Successfully signed in')
+            signed(loginid)
+        else:
+            print('Invalid login id and password')
+  except KeyboardInterrupt:
+    pass
+        
+def signed(loginid):
+  recs(loginid)
+  while True:
+    b=input('animated movie/webseries (m/w) or type wish to open wishlist or type logout to logout.')
+    if b.lower()=='m':
+        sear=input('Enter Name / Studio / Genre ?') 
+        search=sear.lower()
+        cn=MSearch(search)
+        if cn.lower()!='back':
+          rate(loginid,cn)
+          wishadd(loginid, cn)
+    elif b.lower()=='w':
+        sear=input('Enter Name / Studio / Genre ?') 
+        search==sear.lower()
+        cn=WSearch(search)
+        if cn.lower()!='back':
+          rate(loginid,cn)
+          wishadd(loginid, cn)
+    elif b.lower()=='logout':
+        break
+    elif b.lower()=='wish':
+        wishlist(loginid)
+    else:
+        print('Please enter either m(for movie) or w(for webseries)') 
+
+
+def rate(loginid,cn):
+  rate=input("Would you like to leave a rating?(Y/N)=")
+  if rate.upper()=="Y":
+      try:
+          with open (str(loginid)+ ".csv","r") as q:
+              pass
+      except:
+          with open (str(loginid)+ ".csv","w",newline='') as q:
+              cw=csv.writer(q)
+              cw.writerow(['CN','RATING'])
+      with open (str(loginid)+ ".csv","r+",newline='') as q:
+        cr=csv.reader(q)
+        cw=csv.writer(q)
+        l=[]
+        for i in cr:
+            l.append(i)
+        for i in range(len(l)):
+          if l[i][0]==cn:
+            print("You have already rated before")
+            alt=input('Do you wish to alter your previous rating? (y/n)')
+            if alt.lower()=='y':
+                print('previous rating:',l[i][1])
+                while True:
+                    newr=int(input('Enter new rating'))
+                    if newr<=5:
+                        cur.execute( "Select rating from movie where cn='"+cn+"';")
+                        data3=cur.fetchall()
+                        new=(data3[0][0]*len(l)-int(l[i][1])+newr)/len(l)
+                        cur.execute("update movie set rating="+str(new)+"where cn='"+cn+"';")
+                        l[i][1]=newr
+                        q.seek(0)
+                        cw.writerows(l)
+                        break
+                    else:
+                        print('Please enter rating from 0 to 5')
+                
+            break
+        else:
+          with open (str(loginid)+ ".csv","a",newline='') as q:
+            cw=csv.writer(q)
+            while True:
+                mark=int(input("Enter the rating out 5="))
+                if mark<=5:
+                    cur.execute( "Select rating from movie where cn='"+cn+"';")
+                    data3=cur.fetchall()
+                    new=(data3[0][0]*len(l)+mark)/(len(l)+1)
+                    cur.execute("update movie set rating="+str(new)+"where cn='"+cn+"';")
+                    cw.writerow([cn,mark])
+                    break
+                else:
+                    print('Please enter rating from 0 to 5')
+
+def wishlist(loginid): 
+  with open("wishlist.csv", "r") as w:
+    cr=csv.reader(w)
+    for i in cr:
+      if i[0]==loginid:
+        break
+    print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+      ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+    try:
+        lfinal=i[1].strip('][').split(', ') 
+        for j in lfinal:
+          cur.execute( "Select CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE from movie where cn="+j+";")
+          data=cur.fetchall ()
+          for x,y,z,a,b,c,d in data:
+            print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+                  (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+    except:
+        print('wishlist empty')
+  mew=input('Do you wish to edit the wishlist? (y/n)')
+  if mew.lower()=='y':
+      wishdel(loginid)
+    
+def wishadd(loginid,cn):
+  ans=input('Would you like to add the movie/webseries to your wishlist? (y/n)')
+  if ans.lower()=='y':
+    with open('wishlist.csv','r+',newline='') as F:
+          r=csv.reader(F)
+          l=[]
+          for i in r:
+              l.append(i)
+          for i in range(0,len(l)):
+              if l[i][0]==loginid:
+                  lfinal=l[i][1].strip("][").split(', ') 
+                  if cn not in lfinal:
+                      lfinal.append(cn)
+                      l[i][1]=lfinal
+                  break
+          w=csv.writer(F)
+          F.seek(0)
+          w.writerows(l)
+
+def wishdel(loginid): 
+    cn=input('Enter the cn of the movie you wish to delete:')
+    with open('wishlist.csv','r+',newline='') as F:
+        r=csv.reader(F)
+        l=[]
+        for i in r:
+            l.append(i)
+        for i in range(0,len(l)):
+          if l[i][0]==loginid:
+            lfinal=l[i][1].strip("][").split(', ')
+            for j in lfinal:
+              c=j.strip("'")
+              print(c)
+              if c==cn:
+                lfinal.remove(j)
+                l[i][1]=lfinal
+                break
+            break
+        w=csv.writer(F)
+        F.seek(0)
+        w.writerows(l)
+
+def recs(loginid): 
+  with open ("secondary.csv","r") as sec:
+    cr=csv.reader(sec)
+    for i in cr:
+      if i[0]==loginid:
+        x=i[1]
+  if x != 'none':
+    cur.execute('Select CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE  from movie where language ="'+str(x)+'";')
+    reco=cur.fetchall()
+    length=len(reco)
+    if length==0:
+        cur.execute('Select CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE from movie;')
+        reco=cur.fetchall()
+        length=len(reco)
+        print('SOME RECOMMENDATIONS')
+        print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+        for i in range(0,5):
+              l=[]
+              num= random.randrange(0,length)
+              l.append(reco[num])
+              for x,y,z,a,b,c,d in l:
+    #CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+                print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+                  (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+    else:   
+        print('SOME RECOMMENDATIONS')
+        print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+                      ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+        for i in range(0,5):
+                l=[]
+                num= random.randrange(0,length)
+                l.append(reco[num])
+                for x,y,z,a,b,c,d in l:
+            #CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+                    print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+                          (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+  else:
+    cur.execute('Select CN,NAME,STUDIO,GENRE,YOR,RATING,LANGUAGE from movie;')
+    reco=cur.fetchall()
+    length=len(reco)
+    print('SOME RECOMMENDATIONS')
+    print('%3s | %20s | %35s | %45s | %4s | %4s | %12s |'  % \
+              ('CN','NAME'.ljust(20, " "),'STUDIO'.ljust(35, " "),'GENRE'.ljust(45, " "),'YOR ','STAR'.ljust(4, " "), 'LANGUAGE'.ljust(12,' ')))
+    for i in range(0,5):
+          l=[]
+          num= random.randrange(0,length)
+          l.append(reco[num])
+          for x,y,z,a,b,c,d in l:
+    #CN NAME STUDIO GENRE YOR RATING LANGUAGE IN THAT ORDER
+            print('%3s | %20s | %35s | %45s | %4d | %.2f | %12s |'  % \
+                  (x,y.ljust(20, " "),z.ljust(35, " "),a.ljust(45, " "),b,c, d.ljust(12,' ')))
+
+#MAIN
+while True:
+    try:
+        print('WELCOME!')
+        c= input("Would you like to sign up or sign in?(up/in/no)")
+        if  c.lower()=='up':
+            signup()
+        elif c.lower()=='in':
+            signin()
+        elif c.lower()=='no':
+            while True:
+                b=input('animated movie/webseries/go back? (m/w/b)')
+                if b.lower()=='m':
+                      sear=input('Enter Name / Studio / Genre ?')
+                      search=sear.lower()
+                      MSearch(search)
+                elif b.lower()=='w':
+                      sear=input('Enter Name / Studio / Genre ?')
+                      search=sear.lower()
+                      WSearch(search)
+                elif b.lower()=='b':
+                    break
+                else:
+                    print('Please enter either m(for movie) or w(for webseries) or b(to go back)')
+        else:
+            print('Please enter in proper format')
+    except KeyboardInterrupt:
+      try:                                                                    
+                print('ADMIN MODE ACTIVATED, if you wish to leave press ctrl+C')  
+                pwd=input('password')
+                if pwd=='khuaish':
+                    while True:
+                        ask=input('Edit movie/webseries(m/w)?')
+                        try:
+                            if ask.lower()=='m':
+                              ask2=input('add/delete/alter record? Press Ctrl+C to go back (ad/de/al)')
+                              if ask2.lower()=='ad':
+                                addmov()
+                              elif ask2.lower()=='de':
+                                delmov()
+                              elif ask2.lower()=='al':
+                                altmov()
+                              else:
+                                print('please type in proper format')
+                            elif ask.lower()=='w':
+                              ask2=input('add/delete/alter record? Press Ctrl+C to go back (ad/de/al)')
+                              if ask2.lower()=='ad':
+                                addweb()
+                              elif ask2.lower()=='de':
+                                delweb()
+                              elif ask2.lower()=='al':
+                                altweb()
+                              else:
+                                print('please type in proper format')
+                            else:
+                              print('Please enter either m(for movie) or w(for webseries)')
+                        except KeyboardInterrupt:
+                            pass
+                else:
+                    print('incorrect password')
+      except  KeyboardInterrupt:
+        pass
